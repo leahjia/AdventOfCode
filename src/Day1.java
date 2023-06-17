@@ -7,6 +7,9 @@ public class Main {
         System.out.println(findMax(in));
     }
     
+    
+    
+    // day 1
     private static int findMax(BufferedReader in) throws IOException {
         Queue<Integer> pq = new PriorityQueue<>((a, b) -> b - a);
         int curr = 0;
