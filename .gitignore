@@ -1,0 +1,6 @@
+.env
+.idea
+.DS_Store
+
+out
+advent2022.iml
