@@ -15,17 +15,21 @@ public class Day5 {
         
         // last layer contains the numbers
         String labels = layers.pop();
-        int numStack = Character.getNumericValue(labels.trim().charAt(labels.trim().length() - 1));
+        int numStack = Character.getNumericValue(labels.charAt(labels.length() - 1));
         
         // store indices of each stack
         int[] label = new int[numStack + 1];
-        for (int i = 1; i <= numStack; i++) label[i] = labels.indexOf(i + "");
         
         // construct the stacks
         Stack<Character>[] stacks = new Stack[numStack + 1];
-        for (int i = 0; i < stacks.length; i++) stacks[i] = new Stack<>();
-        int size = layers.size();
-        for (int l = 0; l < size; l++) {
+        
+        for (int i = 0; i <= numStack; i++) {
+            label[i] = labels.indexOf(i + "");
+            stacks[i] = new Stack<>();
+        }
+        
+        // move each layer to the stacks
+        while (!layers.isEmpty()) {
             String layer = layers.pop();
             for (int i = 1; i <= numStack; i++) {
                 int index = label[i];
@@ -44,9 +48,16 @@ public class Day5 {
             int move = arr[0];
             int from = arr[1];
             int to = arr[2];
+            Stack<Character> crateMover9001 = new Stack<>();
             for (int i = 0; i < move; i++) {
-                stacks[to].push(stacks[from].pop());
+                // part 1
+                // stacks[to].push(stacks[from].pop());
+                
+                // part 2
+                crateMover9001.push(stacks[from].pop());
             }
+            // part 2
+            while (!crateMover9001.isEmpty()) stacks[to].push(crateMover9001.pop());
         }
         
         // StringBuilder res = new StringBuilder();
