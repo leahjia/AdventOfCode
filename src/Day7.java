@@ -1,7 +1,6 @@
 import java.io.*;
 import java.util.*;
 
-
 public class Day7 {
     
     // Tree structure storing all directories & files
@@ -70,13 +69,13 @@ public class Day7 {
                 
                 // add to directory list for part 1
                 if (newVal <= 100000) {
-                    if (newVal != 0) directories.add(root.branch.get(dir));
+                    directories.add(root.branch.get(dir));
                 }
             } else if (!str.startsWith("dir")) {
                 // e.g. `123 random.log`
                 // create new file & add size to sum
-                int fileSize = Integer.parseInt(line[0]);
                 String fileName = line[1];
+                int fileSize = Integer.parseInt(line[0]);
                 TreeNode newNode = new TreeNode(fileName);
                 newNode.val = fileSize;
                 root.branch.put(fileName, newNode);
