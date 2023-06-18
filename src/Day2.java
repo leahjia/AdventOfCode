@@ -43,6 +43,6 @@ public class Day2 {
                     op == 'B' && me == 'C' ||
                     op == 'C' && me == 'A') res += 6;
         }
-        System.out.println(res); // 11666
+        System.out.println(res);
     }
 }
