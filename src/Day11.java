@@ -39,8 +39,8 @@ public class Day11 {
     // ranking activity
     private static long twoMostActive() {
         Queue<Long> pq = new PriorityQueue<>();
-        for (Monkey monk : map.values()) {
-            pq.add((long) monk.inspected);
+        for (Monkey monkey : map.values()) {
+            pq.add((long) monkey.inspected);
             if (pq.size() > 2) pq.poll();
         }
         return pq.poll() * pq.poll();
