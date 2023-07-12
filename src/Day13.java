@@ -3,7 +3,7 @@ import java.util.*;
 
 public class Day13 {
     public static void main(String[] args) throws FileNotFoundException {
-        Scanner in = new Scanner(new FileReader("input/day13_sample.txt"));
+        Scanner in = new Scanner(new FileReader("input/day13.txt"));
         List<String[]> pairs = new ArrayList<>();
         while (in.hasNext()) {
             String left = in.nextLine();
@@ -14,6 +14,7 @@ public class Day13 {
         int ct = 0;
         for (int i = 0; i < pairs.size(); i++) {
             if (inOrder(pairs.get(i))) {
+//                System.out.println("        "+ (i + 1));
                 ct += i + 1;
             }
         }
@@ -24,6 +25,8 @@ public class Day13 {
         // convert both to List
         List<String> left = toList(pair[0]);
         List<String> right = toList(pair[1]);
+//        System.out.println("left: " + left);
+//        System.out.println("right: " + right);
         
         // while there are elements left in both, compare
         int iter = Math.min(left.size(), right.size());
@@ -31,6 +34,7 @@ public class Day13 {
             // both are integers
             String l = left.get(i);
             String r = right.get(i);
+//            System.out.println(l + " : " + r);
             if (!l.startsWith("[") && !r.startsWith("[")) {
                 int a = Integer.parseInt(l);
                 int b = Integer.parseInt(r);
@@ -52,6 +56,7 @@ public class Day13 {
     }
     
     private static List<String> toList(String s) {
+//        System.out.println(s);
         List<String> res = new ArrayList<>();
         if (s.equals("[]")) return res;
         s = s.substring(1, s.length() - 1);
@@ -66,23 +71,36 @@ public class Day13 {
             }
             
             Stack<String> stack = new Stack<>();
+            int open = 0;
+            for (char ch : str.toCharArray()) {
+                if (ch == '[') {
+                    open++;
+                }
+            }
             stack.push(str);
             while (!stack.isEmpty()) {
                 i++;
+                System.out.println("curr stack: " + stack);
                 for (char ch : list[i].toCharArray()) {
                     if (ch == '[') {
+                        open++;
                         stack.push(ch + "");
                     } else if (ch == ']') {
+                        open--;
                         String temp1 = stack.pop() + ch;
-                        if (stack.isEmpty()) {
+                        if (stack.isEmpty() && open == 0) {
                             str = temp1;
                         } else {
-                            String temp = stack.pop();
-                            if (!temp.endsWith("[")) {
-                                temp += ",";
+                            if (!stack.isEmpty()) {
+                                String temp = stack.pop();
+                                if (!temp.endsWith("[")) {
+                                    temp += ",";
+                                }
+                                temp += temp1;
+                                stack.push(temp);
+                            } else {
+                                stack.push(temp1);
                             }
-                            temp += temp1;
-                            stack.push(temp);
                         }
                     } else {
                         // integer
@@ -96,6 +114,7 @@ public class Day13 {
                 }
             }
             res.add(str);
+//            System.out.println(res);
         }
         return res;
     }
