@@ -1,8 +1,9 @@
-use std::{cmp::Ordering, str::FromStr, fs};
+use std::{cmp::Ordering, fs, str::FromStr};
 
 fn main() {
     let file = fs::read_to_string("../input/day2.txt").unwrap();
     println!("{}{}", "Expect: 11666, result: ", part1(&file));
+    println!("{}{}", "Expect: 12767, result: ", part2(&file));
 }
 
 #[derive(PartialEq, Copy, Clone)]
@@ -12,8 +13,10 @@ enum Move {
     Scissors = 3,
 }
 
-// implement partial ordering, returns an option for ordering
+// for part 1 comparison
+// implement partial ordering - returns an option for ordering
 // reason: equality/comparison in a loop
+// comment: approach more complex than it could be
 impl PartialOrd for Move {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         if self == &Move::Scissors && other == &Move::Rock {
@@ -53,6 +56,40 @@ pub fn part1(input: &str) -> String {
                 Some(Ordering::Greater) => moves[1] as u32,
                 None => {
                     panic!("not comparable moves")
+                }
+            }
+        })
+        .sum();
+    res.to_string()
+}
+
+// diff in part 2 - comparison rule
+pub fn part2(input: &str) -> String {
+    let res: u32 = input
+        .lines()
+        .map(|line| {
+            let moves: Vec<&str> = line.split(" ").collect();
+            let op = moves[0].parse::<Move>().unwrap();
+            match moves[1] {
+                "X" => {
+                    let me = match op {
+                        Move::Rock => Move::Scissors,
+                        Move::Paper => Move::Rock,
+                        Move::Scissors => Move::Paper,
+                    };
+                    me as u32
+                }
+                "Y" => 3 + op as u32,
+                "Z" => {
+                    let me = match op {
+                        Move::Rock => Move::Paper,
+                        Move::Paper => Move::Scissors,
+                        Move::Scissors => Move::Rock,
+                    };
+                    6 + me as u32
+                }
+                _ => {
+                    panic!("What is this move")
                 }
             }
         })
