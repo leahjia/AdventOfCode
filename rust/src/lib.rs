@@ -19,7 +19,7 @@ mod tests {
 
     #[test]
     fn it_reads() {
-        let result: Result<Vec<String>> = read_line("../input/day1_sample.txt");
+        let result: Result<Vec<String>> = read_line("../input/day2.txt");
         assert!(result.is_ok());
     }
 }
