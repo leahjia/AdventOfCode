@@ -1,18 +1,14 @@
-use nom::character::complete::newline;
-use nom::multi::separated_list1;
-use nom::sequence::separated_pair;
-use nom::{bytes::complete::tag, character::complete, *};
-use std::fs;
-use std::ops::RangeInclusive;
+use nom::{
+    bytes::complete::tag, character::complete, character::complete::newline,
+    multi::separated_list1, sequence::separated_pair, *,
+};
+use std::{fs, ops::RangeInclusive};
 
 lazy_static::lazy_static! {
     static ref FILE:String = fs::read_to_string("../input/day4.txt").unwrap();
 }
 
-fn main() {
-    println!("{}{}", "Expected: 524, result: ", part1(&FILE));
-    println!("{}{}", "Expected: 798, result: ", part2(&FILE));
-}
+fn main() {}
 
 fn pair_of_ranges(input: &str) -> IResult<&str, (RangeInclusive<u32>, RangeInclusive<u32>)> {
     let (input, ((start1, end1), (start2, end2))) = separated_pair(
@@ -23,7 +19,7 @@ fn pair_of_ranges(input: &str) -> IResult<&str, (RangeInclusive<u32>, RangeInclu
     Ok((input, ((start1..=end1), (start2..=end2))))
 }
 
-// return custom result type
+// custom result type
 fn sections(input: &str) -> IResult<&str, Vec<(RangeInclusive<u32>, RangeInclusive<u32>)>> {
     let (input, ranges) = separated_list1(newline, pair_of_ranges)(input)?;
     Ok((input, ranges))
@@ -59,12 +55,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn part1_test() {
+    fn day4_part1_test() {
         assert_eq!(part1(&FILE), "524");
     }
 
     #[test]
-    fn part2_test() {
+    fn day4_part2_test() {
         assert_eq!(part2(&FILE), "798");
     }
 }
