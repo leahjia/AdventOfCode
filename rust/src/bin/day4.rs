@@ -42,10 +42,7 @@ fn part2(input: &str) -> String {
     let (_, sections) = sections(input).unwrap();
     sections
         .iter()
-        .filter(|(a, b)| {
-            a.clone().into_iter().any(|n| b.contains(&n))
-                || b.clone().into_iter().any(|n| a.contains(&n))
-        })
+        .filter(|(a, b)| a.clone().into_iter().any(|n| b.contains(&n)))
         .count()
         .to_string()
 }
