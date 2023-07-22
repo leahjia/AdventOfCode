@@ -6,12 +6,11 @@ public class Day15 {
     
     static int left = Integer.MAX_VALUE;
     static int right = Integer.MIN_VALUE;
-    static Set<Point> set;
     static List<Point[]> pairs;
-    static final int BOUND = 4000000;
+    static final int BOUND = 20;
     
     public static void main(String[] args) throws FileNotFoundException {
-        Scanner in = new Scanner(new FileReader("input/day15.txt"));
+        Scanner in = new Scanner(new FileReader("input/day15_sample.txt"));
         pairs = new ArrayList<>();
         parser(in);
         
@@ -20,16 +19,17 @@ public class Day15 {
         
         // part 2
         long startTime = System.currentTimeMillis();
-        set = new TreeSet<>(new PointComparator());
-        findPoints();
-        System.out.println(set.size());
-        for (Point p : set) {
-            System.out.println(p.x + ", " + p.y);
-        }
+        Point pt = findPoints();
+        // print all possible points
+        System.out.println(pt.x + ", " + pt.y);
+//        for (int r = 0; r <= BOUND; r++) {
+//            printCoverage(r);
+//        }
         System.out.println("Execution time: " + (System.currentTimeMillis() - startTime) + "ms");
     }
     
-    private static void findPoints() {
+    private static Point findPoints() {
+        Set<Point> set = new TreeSet<>(new PointComparator());
         // narrow down candidate list
         for (Point[] pair : pairs) {
             Point sensor = pair[0];
@@ -38,32 +38,40 @@ public class Day15 {
             int row = sensor.y;
             int y = -1;
             
-            // search around the parameter
+            // search around/outside the parameter
             int width = sensor.x + dist + 1;
             for (int x = sensor.x - dist - 1; x <= width; x++) {
                 // y increase on first half, decrease second half
                 y += x < width / 2 ? 1 : -1;
                 if (0 <= x && x <= BOUND) {
-                    if (0 <= row - y && row - y <= BOUND) set.add(new Point(x, row - y));
-                    if (0 <= row + y && row + y <= BOUND) set.add(new Point(x, row + y));
+                    if (0 <= row - y && row - y <= BOUND) {
+                        Point point = new Point(x, row - y);
+                        if (!isContainedElsewhere(point)) return point;
+                    }
+                    if (0 <= row + y && row + y <= BOUND) {
+                        Point point = new Point(x, row + y);
+                        if (!isContainedElsewhere(point)) return point;
+                    }
                 }
             }
-            checkPoints();
+//            System.out.println("iter before check points " + set.size());
+//            checkPoints(set);
         }
+        return new Point(0, 0);
+//        return set;
     }
     
-    private static void checkPoints() {
+    private static void checkPoints(Set<Point> set) {
         Set<Point> remove = new TreeSet<>(new PointComparator());
         for (Point pt : set) {
-            if (isInRange(pt.x, pt.y)) {
+            if (isContainedElsewhere(pt)) {
                 remove.add(pt);
             }
         }
         set.removeAll(remove);
     }
     
-    private static boolean isInRange(int x, int y) {
-        Point point = new Point(x, y);
+    private static boolean isContainedElsewhere(Point point) {
         for (Point[] pair : pairs) {
             Point sensor = pair[0];
             Point beacon = pair[1];
@@ -74,7 +82,7 @@ public class Day15 {
         return false;
     }
     
-    private static Point part2(List<Point[]> pairs, int row) {
+    private static Point printCoverage(int row) {
         char[] chars = new char[BOUND + 1];
         Arrays.fill(chars, '.');
         
@@ -110,6 +118,7 @@ public class Day15 {
         return null;
     }
     
+    // for part 2
     private static int getRange(List<Point[]> pairs, int row) {
         char[] chars = new char[right - left];
         Arrays.fill(chars, '.');
@@ -143,7 +152,7 @@ public class Day15 {
         return count;
     }
     
-    // parsing input file
+    // parsing input file into pairs of sensor-beacon
     private static void parser(Scanner in) {
         Pattern pattern = Pattern.compile("x=(-?\\d+),\\s*y=(-?\\d+)");
         while (in.hasNext()) {
@@ -176,13 +185,13 @@ public class Day15 {
         boolean equals(Point other) {
             return this.x == other.x && this.y == other.y;
         }
-        
     }
     
+    // need this comparator to make TreeSet work properly
     static class PointComparator implements Comparator<Point> {
         @Override
         public int compare(Point a, Point b) {
-            return a.x == b.x ? Integer.compare(a.y, b.y) : Integer.compare(a.x, b.x);
+            return a.y == b.y ? Integer.compare(a.x, b.x) : Integer.compare(a.y, b.y);
         }
     }
 }
