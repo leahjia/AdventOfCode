@@ -1,16 +1,18 @@
+import sun.management.Sensor;
+
 import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 
-public class Day15 {
+class Day15 {
     
     static int left = Integer.MAX_VALUE;
     static int right = Integer.MIN_VALUE;
     static List<Point[]> pairs;
-    static final int BOUND = 20;
+    static final int BOUND = 4000000;
     
     public static void main(String[] args) throws FileNotFoundException {
-        Scanner in = new Scanner(new FileReader("input/day15_sample.txt"));
+        Scanner in = new Scanner(new FileReader("input/day15.txt"));
         pairs = new ArrayList<>();
         parser(in);
         
@@ -21,68 +23,58 @@ public class Day15 {
         long startTime = System.currentTimeMillis();
         Point pt = findPoints();
         // print all possible points
-        System.out.println(pt.x + ", " + pt.y);
-//        for (int r = 0; r <= BOUND; r++) {
-//            printCoverage(r);
-//        }
+        System.out.println("Part II: " + pt.x + ", " + pt.y); // 2673432, 3308112
         System.out.println("Execution time: " + (System.currentTimeMillis() - startTime) + "ms");
     }
     
+    // go through the parameter of rach point
     private static Point findPoints() {
-        Set<Point> set = new TreeSet<>(new PointComparator());
-        // narrow down candidate list
         for (Point[] pair : pairs) {
+//        Point[] pair = new Point[]{new Point(17, 20), new Point(21, 22)};
+//        Point[] pair = new Point[]{new Point(16, 7), new Point(15, 3)};
             Point sensor = pair[0];
             Point beacon = pair[1];
             int dist = getDist(sensor, beacon);
             int row = sensor.y;
             int y = -1;
             
-            // search around/outside the parameter
-            int width = sensor.x + dist + 1;
-            for (int x = sensor.x - dist - 1; x <= width; x++) {
+            // search around the parameter
+            int rightBound = sensor.x + dist + 1;
+            int leftBound = sensor.x - dist - 1;
+            int width = rightBound - leftBound;
+            //System.out.println("Checking from " + leftBound + " to " + rightBound + " at row " + row);
+            for (int x = leftBound; x <= rightBound; x++) {
                 // y increase on first half, decrease second half
-                y += x < width / 2 ? 1 : -1;
+                y += x <= width / 2 + leftBound ? 1 : -1;
                 if (0 <= x && x <= BOUND) {
                     if (0 <= row - y && row - y <= BOUND) {
                         Point point = new Point(x, row - y);
-                        if (!isContainedElsewhere(point)) return point;
+                        //System.out.println(point.x + ", " + point.y);
+                        if (notInRange(point)) return point;
                     }
                     if (0 <= row + y && row + y <= BOUND) {
                         Point point = new Point(x, row + y);
-                        if (!isContainedElsewhere(point)) return point;
+                        //System.out.println(point.x + ", " + point.y);
+                        if (notInRange(point)) return point;
                     }
                 }
             }
-//            System.out.println("iter before check points " + set.size());
-//            checkPoints(set);
         }
         return new Point(0, 0);
-//        return set;
     }
     
-    private static void checkPoints(Set<Point> set) {
-        Set<Point> remove = new TreeSet<>(new PointComparator());
-        for (Point pt : set) {
-            if (isContainedElsewhere(pt)) {
-                remove.add(pt);
-            }
-        }
-        set.removeAll(remove);
-    }
-    
-    private static boolean isContainedElsewhere(Point point) {
+    private static boolean notInRange(Point point) {
         for (Point[] pair : pairs) {
             Point sensor = pair[0];
             Point beacon = pair[1];
             if (getDist(point, sensor) <= getDist(sensor, beacon)) {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
     
-    private static Point printCoverage(int row) {
+    private static void printCoverage(int row) {
         char[] chars = new char[BOUND + 1];
         Arrays.fill(chars, '.');
         
@@ -107,18 +99,10 @@ public class Day15 {
                 }
             }
         }
-
-//        System.out.print(row + ": ");
-//        System.out.println(chars);
-        
-        for (int i = 0; i <= BOUND; i++) {
-            char ch = chars[i];
-            if (ch == '.') return new Point(i, row);
-        }
-        return null;
+//        System.out.println(row + ": " + chars);
     }
     
-    // for part 2
+    // for part 1
     private static int getRange(List<Point[]> pairs, int row) {
         char[] chars = new char[right - left];
         Arrays.fill(chars, '.');
@@ -154,13 +138,13 @@ public class Day15 {
     
     // parsing input file into pairs of sensor-beacon
     private static void parser(Scanner in) {
-        Pattern pattern = Pattern.compile("x=(-?\\d+),\\s*y=(-?\\d+)");
+        Pattern pattern = Pattern.compile("x=(-?\\d+), y=(-?\\d+).*x=(-?\\d+), y=(-?\\d+)");
+        
         while (in.hasNext()) {
             Matcher matcher = pattern.matcher(in.nextLine());
             matcher.find();
             Point sensor = new Point(Integer.parseInt(matcher.group(1)), Integer.parseInt(matcher.group(2)));
-            matcher.find();
-            Point beacon = new Point(Integer.parseInt(matcher.group(1)), Integer.parseInt(matcher.group(2)));
+            Point beacon = new Point(Integer.parseInt(matcher.group(3)), Integer.parseInt(matcher.group(4)));
             pairs.add(new Point[]{sensor, beacon});
             
             int dist = getDist(sensor, beacon);
