@@ -15,16 +15,16 @@ class Day15 {
         parser(in);
         
         // part 1 - where points cannot exist
-        System.out.println("Count: Expected 5809294, Received " + getRange(pairs, 2000000)); // 5809294
+        System.out.println("Count: Expected 5809294, Received " + getRange(pairs, 2000000));
         
         // part 2
         long startTime = System.currentTimeMillis();
         Point pt = findPoints();
-        System.out.println("Part II: Expected (2673432, 3308112), Received (" + (pt.x + ", " + pt.y) + ")"); // 2673432, 3308112 -> 10693731308112
+        System.out.println("Part II: Expected (2673432, 3308112), Received (" + (pt.x + ", " + pt.y) + ")"); // -> 10693731308112
         System.out.println("Execution time: " + (System.currentTimeMillis() - startTime) + "ms");
     }
     
-    // go through the parameter of rach point
+    // go through the parameter of each sensor
     private static Point findPoints() {
         for (Point[] pair : pairs) {
             Point sensor = pair[0];
