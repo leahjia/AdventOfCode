@@ -1,8 +1,7 @@
-use std::{collections::HashMap, fs};
+use std::fs;
 
 lazy_static::lazy_static! {
     static ref FILE:String = fs::read_to_string("../input/day2.txt").unwrap();
-    static ref MAP:HashMap<char, u16> = [('X', 'A' as u16), ('A', 'A' as u16), ('Y', 'B' as u16), ('Z', 'C' as u16)].iter().cloned().collect();
 }
 
 fn main() {
