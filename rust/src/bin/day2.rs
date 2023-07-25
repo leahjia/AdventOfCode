@@ -16,12 +16,12 @@ fn part1(input: &str) -> u16 {
             let pair: Vec<char> = line.split_whitespace().flat_map(|ch| ch.chars()).collect();
             let op = pair[0] as char;
             let me = pair[1] as char;
-            let me_ascii = me as u16 - 'X' as u16;
-            me_ascii
+            let me_score = me as u16 - 'X' as u16 + 1;
+            me_score
                 + match (op, me) {
-                    ('A', 'Y') | ('B', 'Z') | ('C', 'X') => 7,
-                    _ if op as u16 == me_ascii + 'A' as u16 => 4,
-                    _ => 1,
+                    ('A', 'Y') | ('B', 'Z') | ('C', 'X') => 6,
+                    _ if op as u16 == me_score + 'A' as u16 - 1 => 3,
+                    _ => 0,
                 }
         })
         .sum()
