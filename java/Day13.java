@@ -2,8 +2,6 @@ import java.io.*;
 import java.util.*;
 
 public class Day13 {
-    static int index;
-    
     public static void main(String[] args) throws FileNotFoundException {
         Scanner in = new Scanner(new FileReader("input/day13.txt"));
         List<String[]> pairs = new ArrayList<>();
@@ -17,43 +15,51 @@ public class Day13 {
         // part 1
         int ct = 0;
         for (int i = 0; i < pairs.size(); i++) {
-            if (inOrder(pairs.get(i))) {
-                ct += i + 1;
-            }
+            if (inOrder(pairs.get(i))) ct += i + 1;
         }
-        System.out.println("Count: " + ct);
+        System.out.println("Part I - Count: " + ct);
         
         // part 2 sorting
-        // pq to sort - didn't work
-        /*
-        Queue<String> res = new PriorityQueue<>((a, b) -> a.equals(b) ? 0 : (inOrder(new String[]{a, b}) ? -1 : 1));
+        // approach 1 - pq to sort
+        long startTime = System.currentTimeMillis();
+        Queue<String> pq = new PriorityQueue<>((a, b) -> a.equals(b) ? 0 : (inOrder(new String[]{a, b}) ? -1 : 1));
+        pq.offer("[[2]]");
+        pq.offer("[[6]]");
         for (String[] pair : pairs) {
-            res.add(pair[0]);
-            res.add(pair[1]);
+            pq.offer(pair[0]);
+            pq.offer(pair[1]);
         }
-         */
+        int prod = 1;
+        int index = 1;
+        while (!pq.isEmpty()) {
+            String curr = pq.poll();
+            if (curr.equals("[[2]]")) prod *= index;
+            if (curr.equals("[[6]]")) prod *= index;
+            index++;
+        }
+        System.out.println("Part II - Decoder: " + prod);
+        System.out.println("pq execution time: " + (System.currentTimeMillis() - startTime) + "ms");
+        
+        
+        // approach 2 - dumb sort
+        startTime = System.currentTimeMillis();
         List<String> res = new ArrayList<>();
         for (String[] pair : pairs) {
             insert(res, pair[0]);
             insert(res, pair[1]);
         }
-        insert(res, "[[2]]");
-        int decoder = index + 1;
-        insert(res, "[[6]]");
-        decoder *= (index + 1);
-        System.out.println("Decoder: " + decoder); // ~23049
+        int decoder = (insert(res, "[[2]]") + 1) * (insert(res, "[[6]]") + 1);
+        System.out.println("Part II - Decoder: " + decoder); // ~23049
+        System.out.println("dumb execution time: " + (System.currentTimeMillis() - startTime) + "ms");
     }
     
-    private static void insert(List<String> res, String s) {
+    private static int insert(List<String> res, String s) {
         int i = 0;
         int len = res.size();
-        while (i < len && inOrder(new String[]{res.get(i), s})) {
-            i++;
-        }
-        index = i;
-        if (i == len) {
-            res.add(s);
-        } else {
+        while (i < len && inOrder(new String[]{res.get(i), s})) i++;
+        int index = i;
+        if (i == len) res.add(s);
+        else {
             String cur = res.get(i);
             res.set(i, s);
             i++;
@@ -65,6 +71,7 @@ public class Day13 {
             }
             res.add(cur);
         }
+        return index;
     }
     
     private static boolean inOrder(String[] pair) {
@@ -120,24 +127,18 @@ public class Day13 {
             
             int open = 0;
             for (char ch : curr.toCharArray()) {
-                if (ch == '[') {
-                    open++;
-                } else if (ch == ']') {
-                    open--;
-                }
+                if (ch == '[') open++;
+                else if (ch == ']') open--;
             }
-            String output = curr + ",";
+            StringBuilder output = new StringBuilder(curr + ",");
             while (open != 0) {
                 i++;
                 for (char ch : list[i].toCharArray()) {
-                    if (ch == '[') {
-                        open++;
-                    } else if (ch == ']') {
-                        open--;
-                    }
-                    output += ch;
+                    if (ch == '[') open++;
+                    else if (ch == ']') open--;
+                    output.append(ch);
                 }
-                output += ",";
+                output.append(",");
             }
             res.add(output.substring(0, output.length() - 1));
         }
