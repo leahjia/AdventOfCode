@@ -4,7 +4,7 @@ lazy_static::lazy_static! {
     static ref FILE:String = fs::read_to_string("../input/day2.txt").unwrap();
 }
 
-fn main() {
+pub fn main() {
     println!("{}{}", "Expected 11666, Received ", part1(&FILE));
     println!("{}{}", "Expected 12767, Received ", part2(&FILE));
 }
@@ -58,6 +58,6 @@ mod tests {
 
     #[test]
     fn day2_part2() {
-        assert_eq!(12767, 12767);
+        assert_eq!(12767, part2(&FILE));
     }
 }
