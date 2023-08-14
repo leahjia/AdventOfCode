@@ -1,41 +1,79 @@
+import javafx.util.Pair;
+
+import java.awt.*;
 import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 
 class Day16 {
-    static Map<String, String[]> tunnels;
-    static Map<String, Integer> rates;
+    static Map<String, String[]> tunnels; // <valve, outgoing branches>
+    static Map<String, Integer> rates;    // <valve, pressure>
+    static Map<String, Map<String, Integer>> distance; // <from, <to, distance>>
+    static final String START = "AA";
     static final int MINUTES = 30;
     
     public static void main(String[] args) throws FileNotFoundException {
         parseFile(new Scanner(new FileReader("input/day16_sample.txt")));
+        
+        bfs(); // calc shortest distance from every valve to every other valve
+        System.out.println(distance);
         Set<String> open = new HashSet<>();
-        Map<String, Set<String>> visit = new HashMap<>();
-        System.out.println("Part I: " + findMostPress(visit, open, "AA", 0, 0)); // [, 2045]
+        for (Map.Entry<String, Integer> valve : rates.entrySet()) {
+            if (valve.getValue() == 0) {
+                open.add(valve.getKey());
+            }
+        }
+        System.out.println("Part I: " + findMostPress(open, START, 0, 0)); // [, 2045]
     }
     
-    private static int findMostPress(Map<String, Set<String>> visit, Set<String> open, String currValve, int pressure, int minutesPassed) {
-        if (minutesPassed == MINUTES) return pressure;
-        if (!open.contains(currValve) && rates.get(currValve) > 0) {
-            open.add(currValve);
-            System.out.println("opening valve " + currValve + " after minute " + (minutesPassed + 1) + " , adding " + (rates.get(currValve) * (MINUTES - minutesPassed)));
-            System.out.println(open);
-            int newPress = pressure + rates.get(currValve) * (MINUTES - minutesPassed - 1);
-            int newMax = findMostPress(visit, open, currValve, newPress, minutesPassed + 2);
-            pressure = Math.max(pressure, newMax);
-        }
-        // expect: DD -> BB -> JJ -> HH -> EE -> CC
-        for (String nextValve : tunnels.get(currValve)) {
-            if (visit.containsKey(currValve) && visit.get(currValve).contains(nextValve)) {
-                continue;
+    private static void bfs() {
+        distance = new TreeMap<>();
+        for (String start : rates.keySet()) {
+            Set<String> visit = new HashSet<>();
+            visit.add(start);
+            Queue<Pair<Integer, String>> queue = new LinkedList<>();
+            queue.add(new Pair<>(0, start));
+            while (!queue.isEmpty()) {
+                Pair<Integer, String> valve = queue.poll();
+                int dist = valve.getKey() + 1;
+                String from = valve.getValue();
+                for (String to : tunnels.get(from)) {
+                    if (visit.contains(to)) continue;
+                    visit.add(to);
+                    // if (rates.get(to) > 0) { // only compute useful valves
+                    Map<String, Integer> outgoing = distance.getOrDefault(start, new TreeMap<>());
+                    outgoing.put(to, dist);
+                    distance.put(start, outgoing);
+                    // }
+                    queue.add(new Pair<>(dist, to));
+                }
             }
-            Set<String> set = visit.getOrDefault(currValve, new HashSet<>());
-            set.add(nextValve);
-            visit.put(currValve, set);
-            int newMax = findMostPress(visit, open, nextValve, pressure, minutesPassed + 1);
-            pressure = Math.max(pressure, newMax);
         }
-        return pressure;
+    }
+    
+    private static int findMostPress(Set<String> open, String valve, int pressure, int minute) {
+        if (minute >= MINUTES) return pressure;
+        
+        if (rates.get(valve) == 0) open.add(valve);
+        boolean valveOpened = open.contains(valve);
+        int maxPress = pressure;
+        
+        if (!valveOpened) {
+            open.add(valve);
+            for (String outgoing : tunnels.get(valve)) {
+                int openValve = rates.get(valve) * (MINUTES - minute);
+                int newPress = pressure + openValve;
+                newPress = Math.max(newPress, findMostPress(open, outgoing, newPress, minute + 1));
+                maxPress = Math.max(maxPress, newPress);
+            }
+            // backtrack
+            open.remove(valve);
+        } else {
+            for (String outgoing : tunnels.get(valve)) {
+                maxPress = Math.max(maxPress, findMostPress(open, outgoing, pressure, minute + 1));
+            }
+        }
+        return maxPress;
     }
     
     private static void parseFile(Scanner in) {
