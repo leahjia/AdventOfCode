@@ -3,4 +3,4 @@ Cargo.lock
 Cargo.toml
 rustfmt.toml
 src/bin/*
-!src/bin/day3.rs
+!src/bin/day4.rs
