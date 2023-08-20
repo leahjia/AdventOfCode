@@ -23,7 +23,7 @@ public class Day6 {
         for (char ch : window) {
             dict.put(ch, dict.getOrDefault(ch, 0) + 1);
         }
-        while(dict.size() != range && r - 1 < s.length() - 1) {
+        while (dict.size() != range && r < s.length()) {
             // remove left of the window
             char left = s.charAt(l++);
             if (dict.get(left) == 1) dict.remove(left);
