@@ -5,13 +5,12 @@ public class Day8 {
     static final int[][] direct = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
     static int row;
     static int col;
-    static List<List<Integer>> grid;
     static int[][] matrix;
     
     public static void main(String[] args) throws FileNotFoundException {
         Scanner in = new Scanner(new FileReader("input/day8.txt"));
         
-        grid = new ArrayList<>();
+        List<List<Integer>> grid = new ArrayList<>();
         while (in.hasNext()) {
             char[] line = in.nextLine().toCharArray();
             List<Integer> list = new ArrayList<>();
@@ -86,7 +85,7 @@ public class Day8 {
         int visible = (row + col) * 2 - 4;
         for (int r = 1; r < row - 1; r++) {
             for (int c = 1; c < col - 1; c++) {
-                int curr = grid.get(r).get(c);
+                int curr = matrix[r][c];
                 if (curr > top[r - 1][c] || curr > left[r][c - 1] ||
                         curr > bottom[r + 1][c] || curr > right[r][c + 1]) {
                     visible++;
