@@ -6,20 +6,15 @@ class Day16 {
     static Map<String, String[]> tunnels;
     static Map<String, Integer> rates;
     static final int MINUTES = 30;
-    static int max;
     
     public static void main(String[] args) throws FileNotFoundException {
         parseFile(new Scanner(new FileReader("input/day16_sample.txt")));
         Set<String> open = new HashSet<>();
-        max = 0;
         System.out.println("Part I: " + findMostPress(new HashMap<>(), open, "AA", 0, 0)); // [886, 2045]
     }
     
-    private static void findMostPress(Map<String, Set<String>> visit, Set<String> open, String currValve, int pressure, int minute) {
-        if (minute >= MINUTES) {
-            max = Math.max(pressure, max);
-            return;
-        }
+    private static int findMostPress(Map<String, Set<String>> visit, Set<String> open, String currValve, int pressure, int minute) {
+        if (minute >= MINUTES) return pressure;
         int rate = rates.get(currValve);
         int temp = pressure;
         
@@ -37,6 +32,7 @@ class Day16 {
             minute--;
         }
         pressure = Math.max(pressure, Math.max(temp, dfs(visit, open, currValve, pressure, minute)));
+        return pressure;
     }
     
     private static int dfs(Map<String, Set<String>> visit, Set<String> open, String currValve, int currPress, int minute) {
