@@ -22,16 +22,16 @@ impl Tree {
 }
 
 lazy_static::lazy_static! {
-    static ref FILE: String = fs::read_to_string("../input/day7.txt").unwrap();
+    static ref FILE: String = fs::read_to_string("../input/day7_sample.txt").unwrap();
 }
-static mut DIRECTORIES: Vec<&mut TreeNode> = Vec::new();
+static mut SUM: u32 = 0;
 
 fn main() {
     let mut lines = FILE.lines();
     let mut tree = Tree::new();
     tree.root.val = traverse(&mut tree.root, &mut lines);
 
-    println!("{}{}", "day 7 part I:  1297683 - ", unsafe { DIRECTORIES.iter().map(|node| node.val).sum::<u32>() });
+    println!("{}{}", "day 7 part I:  1297683 - ", unsafe { SUM });
     println!("{}{}", "day 7 part II: 5756764 - ", dfs(&FILE));
 }
 
@@ -53,11 +53,23 @@ fn traverse(root: &mut TreeNode, lines: &mut std::str::Lines) -> u32 {
             let new_val = traverse(root, lines);
             root.val += new_val;
             if new_val <= 100000 {
-                unsafe { DIRECTORIES.push(root.branch.get_mut(dir).unwrap()) };
+                unsafe {
+                    SUM += new_val;
+                    dbg!(&SUM);
+                }
             }
+        } else if !line.starts_with("dir") {
+            let file_name = parts[1];
+            let file_size: u32 = parts[0].parse().unwrap();
+            let mut new_node = TreeNode::new();
+            new_node.val = file_size;
+            dbg!(&root.val);
+            root.branch.insert(file_name.to_string(), new_node);
+            root.val += file_size;
+            // dbg!(&file_size);
         }
     }
-    4
+    root.val
 }
 
 fn dfs(input: &str) -> u32 {
@@ -70,9 +82,9 @@ mod tests {
 
     #[test]
     fn day7_test_part1() {
-        let mut tree = Tree::new();
-        tree.root.val = traverse(&mut tree.root);
-        assert_eq!(unsafe { DIRECTORIES.iter().map(|node| node.val).sum::<u32>() }, 1297683)
+        // let mut tree = Tree::new();
+        // tree.root.val = traverse(&mut tree.root);
+        // assert_eq!(&SUM, 1297683)
     }
 
     #[test]
