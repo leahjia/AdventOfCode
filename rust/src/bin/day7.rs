@@ -1,24 +1,30 @@
-use std::{collections::HashMap, fs, sync::Mutex};
+use crate::tree_module::TreeNode;
+use std::{cmp, fs, sync::Mutex, u32::MAX};
 
-#[derive(Debug)]
-struct TreeNode {
-    val: u32,
-    branch: HashMap<String, TreeNode>,
-}
+mod tree_module {
+    use std::collections::HashMap;
 
-impl TreeNode {
-    fn new() -> TreeNode {
-        TreeNode { val: 0, branch: HashMap::new() }
+    #[derive(Debug)]
+    pub struct TreeNode {
+        pub val: u32,
+        pub branch: HashMap<String, TreeNode>,
     }
-}
 
-struct Tree {
-    root: TreeNode,
-}
+    impl TreeNode {
+        pub fn new() -> TreeNode {
+            TreeNode { val: 0, branch: HashMap::new() }
+        }
+    }
 
-impl Tree {
-    fn new() -> Tree {
-        Tree { root: TreeNode::new() }
+    #[derive(Debug)]
+    pub struct Tree {
+        pub root: TreeNode,
+    }
+
+    impl Tree {
+        pub fn new() -> Tree {
+            Tree { root: TreeNode::new() }
+        }
     }
 }
 
@@ -29,11 +35,13 @@ lazy_static::lazy_static! {
 
 fn main() {
     let mut lines = FILE.lines();
-    let mut tree = Tree::new();
+    let mut tree = tree_module::Tree::new();
     tree.root.val = traverse(&mut tree.root, &mut lines);
-
     println!("{}{}", "day 7 part I:  1297683 - ", SUM.lock().unwrap());
-    println!("{}{}", "day 7 part II: 5756764 - ", dfs(&FILE));
+
+    let target = 30000000 - (70000000 - tree.root.val);
+    let mut curr = tree.root.val;
+    println!("{}{}", "day 7 part II: 5756764 - ", dfs(&tree.root, &mut curr, target));
 }
 
 fn traverse(root: &mut TreeNode, lines: &mut std::str::Lines) -> u32 {
@@ -68,23 +76,41 @@ fn traverse(root: &mut TreeNode, lines: &mut std::str::Lines) -> u32 {
     root.val
 }
 
-fn dfs(input: &str) -> u32 {
-    4
+fn dfs(root: &TreeNode, curr: &mut u32, target: u32) -> u32 {
+    if root.branch.is_empty() || root.val < target {
+        return MAX;
+    }
+    *curr = cmp::min(*curr, root.val);
+    for node in root.branch.values() {
+        *curr = cmp::min(*curr, dfs(node, curr, target));
+    }
+    *curr
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::tree_module::Tree;
+    use lazy_static::lazy_static;
+    use std::sync::Mutex;
+
+    lazy_static! {
+        static ref TREE: Mutex<Tree> = Mutex::new(Tree::new());
+    }
 
     #[test]
     fn day7_test_part1() {
-        let mut tree = Tree::new();
-        tree.root.val = traverse(&mut tree.root, &mut FILE.lines());
+        TREE.lock().unwrap().root.val = traverse(&mut TREE.lock().unwrap().root, &mut FILE.lines());
         assert_eq!(*SUM.lock().unwrap(), 1297683)
     }
 
     #[test]
     fn day7_test_part2() {
-        assert_eq!(dfs(&FILE), 5756764)
+        // need to lock it when accessing a Mutex in a multi-threaded context
+        //  to ensure exclusive access and prevent data races
+        //  probably should do that for main as well
+        let target = 30000000 - (70000000 - TREE.lock().unwrap().root.val);
+        let mut curr = TREE.lock().unwrap().root.val;
+        assert_eq!(dfs(&TREE.lock().unwrap().root, &mut curr, target), 5756764)
     }
 }
