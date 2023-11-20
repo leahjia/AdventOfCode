@@ -15,16 +15,38 @@ fn main() {
     }
     *ROW.lock().unwrap() = grid.len();
     *COL.lock().unwrap() = grid[0].len();
-    println!("{}{}", "day 8 part I: 1543 - ", visible(grid));
-    println!("{}{}", "day 8 part II: 595080 - ", scenicScore());
+    println!("{}{}", "day 8 part I: 1543 - ", visible(grid.clone()));
+    println!("{}{}", "day 8 part II: 595080 - ", scenicScore(grid));
 }
 
-fn scenicScore() -> i32 {
-    -1
+fn scenicScore(grid: Vec<Vec<i32>>) -> i32 {
+    let mut max = 0;
+    let row = *ROW.lock().unwrap();
+    let col = *COL.lock().unwrap();
+    for r in 1..row - 1 {
+        for c in 1..col - 1 {
+            let mut score = 1;
+            for &(x, y) in DIRECT.iter() {
+                score *= score_in_direct(&grid, r as isize, c as isize, x, y);
+            }
+            max = max.max(score);
+        }
+    }
+    max
 }
 
-fn score_in_direct() -> i32 {
-    -1
+fn score_in_direct(grid: &[Vec<i32>], mut r: isize, mut c: isize, x: isize, y: isize) -> i32 {
+    let og = grid[r as usize][c as usize];
+    let mut res = 0;
+    let row = *ROW.lock().unwrap() as isize;
+    let col = *COL.lock().unwrap() as isize;
+    while {r += x; c += y; r >= 0 && c >= 0 && r < row && c < col} {
+        if grid[r as usize][c as usize] >= og {
+            break;
+        }
+        res += 1;
+    }
+    res
 }
 
 fn visible(grid: Vec<Vec<i32>>) -> usize {
