@@ -1,33 +1,34 @@
-use std::{fs, sync::Mutex};
+use std::{fs::File, io};
+use std::io::BufRead;
+use anyhow::Result;
+
 
 lazy_static::lazy_static! {
-    static ref FILE:String = fs::read_to_string("../input/day8.txt").unwrap();
     static ref DIRECT:[(isize, isize); 4] = [(1, 0), (0, 1), (-1, 0), (0, -1)];
-    static ref ROW: Mutex<usize> = Mutex::new(0);
-    static ref COL: Mutex<usize> = Mutex::new(0);
 }
 
-fn main() {
-    let lines = FILE.lines();
+fn main() -> Result<()> {
+    let input  = io::BufReader::new(File::open("../input/day8.txt")?);
+
     let mut grid: Vec<Vec<i32>> = Vec::new();
-    for line in lines {
-        grid.push(line.chars().filter_map(|c| c.to_digit(10)).map(|d| d as i32).collect());
+    for line in input.lines() {
+        grid.push(line?.chars().map(|c| c.to_digit(10).unwrap() as i32).collect());
     }
-    *ROW.lock().unwrap() = grid.len();
-    *COL.lock().unwrap() = grid[0].len();
-    println!("{}{}", "day 8 part I: 1543 - ", visible(grid.clone()));
-    println!("{}{}", "day 8 part II: 595080 - ", scenicScore(grid));
+
+    let row = grid.len();
+    let col = grid[0].len();
+    println!("{}{}", "day 8 part I: 1543 - ", visible(&grid, row, col));
+    println!("{}{}", "day 8 part II: 595080 - ", scenic_score(&grid, row, col));
+    Ok(())
 }
 
-fn scenicScore(grid: Vec<Vec<i32>>) -> i32 {
+fn scenic_score(grid: &Vec<Vec<i32>>, row: usize, col: usize) -> i32 {
     let mut max = 0;
-    let row = *ROW.lock().unwrap();
-    let col = *COL.lock().unwrap();
     for r in 1..row - 1 {
         for c in 1..col - 1 {
             let mut score = 1;
             for &(x, y) in DIRECT.iter() {
-                score *= score_in_direct(&grid, r as isize, c as isize, x, y);
+                score *= score_in_direct(&grid, r as isize, c as isize, x, y, row, col);
             }
             max = max.max(score);
         }
@@ -35,23 +36,19 @@ fn scenicScore(grid: Vec<Vec<i32>>) -> i32 {
     max
 }
 
-fn score_in_direct(grid: &[Vec<i32>], mut r: isize, mut c: isize, x: isize, y: isize) -> i32 {
+fn score_in_direct(grid: &[Vec<i32>], mut r: isize, mut c: isize, x: isize, y: isize, row: usize, col: usize) -> i32 {
     let og = grid[r as usize][c as usize];
     let mut res = 0;
-    let row = *ROW.lock().unwrap() as isize;
-    let col = *COL.lock().unwrap() as isize;
-    while {r += x; c += y; r >= 0 && c >= 0 && r < row && c < col} {
+    while {r += x; c += y; r >= 0 && c >= 0 && r < row as isize && c < col as isize} {
+        res += 1;
         if grid[r as usize][c as usize] >= og {
             break;
         }
-        res += 1;
     }
     res
 }
 
-fn visible(grid: Vec<Vec<i32>>) -> usize {
-    let row = *ROW.lock().unwrap();
-    let col = *COL.lock().unwrap();
+fn visible(grid: &Vec<Vec<i32>>, row: usize, col: usize) -> usize {
     let mut top = vec![vec![0; col]; row];
     let mut down = vec![vec![0; col]; row];
     let mut left = vec![vec![0; col]; row];
@@ -93,18 +90,19 @@ fn visible(grid: Vec<Vec<i32>>) -> usize {
 mod tests {
     use super::*;
     use lazy_static::lazy_static;
+    use std::fs;
 
     lazy_static! {
-        static ref FILE: String = fs::read_to_string("../input/day8.txt").unwrap();
+        static ref GRID: Vec<Vec<i32>> = fs::read_to_string("../input/day8.txt").unwrap().lines().map(|line| line.chars().map(|ch| ch.to_digit(10).unwrap() as i32).collect()).collect();
     }
 
     #[test]
     fn day8_test_part1() {
-        assert_eq!(1543, visible());
+        assert_eq!(1543, visible(&GRID, GRID.len(), GRID[0].len()));
     }
 
     #[test]
     fn day8_test_part2() {
-        assert_eq!(595080, score_in_direct());
+        assert_eq!(595080, scenic_score(&GRID, GRID.len(), GRID[0].len()));
     }
 }

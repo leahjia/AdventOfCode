@@ -100,7 +100,8 @@ mod tests {
 
     #[test]
     fn day7_test_part1() {
-        TREE.lock().unwrap().root.val = traverse(&mut TREE.lock().unwrap().root, &mut FILE.lines());
+        let mut tree = TREE.lock().unwrap();
+        tree.root.val = traverse(&mut tree.root, &mut FILE.lines());
         assert_eq!(*SUM.lock().unwrap(), 1297683)
     }
 
